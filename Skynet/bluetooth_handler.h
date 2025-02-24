@@ -1,36 +1,18 @@
+#ifndef BLUETOOTH_HANDLER_H
+#define BLUETOOTH_HANDLER_H
+
 #include <SoftwareSerial.h>
 #include <EEPROM.h>
 
-SoftwareSerial mySerial(10, 11); // RX, TX
-const int EEPROM_ADDRESS = 0; // EEPROM memory location for UserId
+// External references from main file
+extern SoftwareSerial mySerial;
+extern const int EEPROM_ADDRESS;
 
-void setup() {
-    Serial.begin(9600);
-    while (!Serial) {
-        ; // Wait for serial port to connect. Needed for native USB port only
-    }
+// Function declarations (important for avoiding scope errors)
+void saveUserId(String userId);
+String readUserId();
+void captureBluetoothData();
 
-    Serial.println("HC-06 Ready! Waiting for message...");
-    mySerial.begin(9600);
-
-    // Read stored UserId from EEPROM on startup
-    String storedUserId = readUserId();
-    Serial.print("Stored UserId: ");
-    Serial.println(storedUserId);
-}
-
-void loop() { 
-    captureBluetoothData(); // Capture and process Bluetooth data
-
-    if (mySerial.available()) {
-        Serial.write(mySerial.read());
-    }
-    if (Serial.available()) {
-        mySerial.write(Serial.read());
-    }
-}
-
-// Function to capture and process Bluetooth data
 void captureBluetoothData() {
     if (mySerial.available()) {  
         String receivedMessage = "";  
@@ -47,17 +29,17 @@ void captureBluetoothData() {
         // Extract UserId from received message
         int userIdIndex = receivedMessage.indexOf("\"userId\": \"");
         if (userIdIndex != -1) {
-            int startIndex = userIdIndex + 11; // Start after "UserId": "
+            int startIndex = userIdIndex + 11; // Start after "userId": "
             int endIndex = receivedMessage.indexOf("\"", startIndex); // Find closing "
             String extractedUserId = receivedMessage.substring(startIndex, endIndex);
 
             Serial.print("Extracted UserId: ");
             Serial.println(extractedUserId);
 
-            // Check if UserId is "Akalanka123" and save it
+            // Check if UserId is "1jgre-1ref-tgwesfw-tfedw" and save it
             if (extractedUserId == "1jgre-1ref-tgwesfw-tfedw") {
                 Serial.println("UserId Matched: Saving to EEPROM...");
-                saveUserId(extractedUserId);
+                saveUserId(extractedUserId);  // No more scope issue!
             }
         }
     }
@@ -82,3 +64,5 @@ String readUserId() {
     }
     return userId;
 }
+
+#endif
