@@ -1,6 +1,6 @@
 #include <SoftwareSerial.h>
 #include <EEPROM.h>
-#include "bluetooth_handler.h"  // Include the external file
+#include "auth_handler.h"  // Include the external file
 
 SoftwareSerial mySerial(10, 11); // RX, TX
 const int EEPROM_ADDRESS = 0; // EEPROM memory location for UserId
