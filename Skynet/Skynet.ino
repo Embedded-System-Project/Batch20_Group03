@@ -27,7 +27,7 @@ void loop() {
         String message = Serial.readString();  // Read full message from Serial Monitor
         Serial.print("Sending to Bluetooth: ");
         Serial.println(message);
-//        mySerial.print(message);  // Send actual text, not ASCII
+        mySerial.print(message);  // Send actual text, not ASCII
     }
 
     // If data is received from Bluetooth, send it to Serial Monitor
