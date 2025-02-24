@@ -23,10 +23,17 @@ void setup() {
 void loop() { 
     captureBluetoothData(); // Call function from external file
 
-    if (mySerial.available()) {
-        Serial.write(mySerial.read());
+     if (Serial.available()) {
+        String message = Serial.readString();  // Read full message from Serial Monitor
+        Serial.print("Sending to Bluetooth: ");
+        Serial.println(message);
+//        mySerial.print(message);  // Send actual text, not ASCII
     }
-    if (Serial.available()) {
-        mySerial.write(Serial.read());
+
+    // If data is received from Bluetooth, send it to Serial Monitor
+    if (mySerial.available()) {
+        String receivedMessage = mySerial.readString();
+        Serial.print("Received from Bluetooth: ");
+        Serial.println(receivedMessage);
     }
 }
