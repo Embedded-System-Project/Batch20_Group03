@@ -34,6 +34,9 @@ void captureBluetoothData() {
         String extractedUserId = "";
         String extractedAction = "";
 
+
+            Serial.println("userIdIndex--"+userIdIndex);
+
         if (userIdIndex != -1) {
             int startIndex = userIdIndex + 11; 
             int endIndex = receivedMessage.indexOf("\"", startIndex);
@@ -58,7 +61,10 @@ void captureBluetoothData() {
 
         // Check if UserId matches the one stored in EEPROM
         String storedUserId = readUserId();
+          Serial.println("hi--"+extractedUserId);
+          Serial.println("Hello--"+storedUserId);
         if (extractedUserId == storedUserId) {
+           mySerial.println("=Auth Successfully");
             Serial.println("UserId Matched: Verified Successfully!");
             mySerial.println("OK");  // Send response to keep connection alive
         } else {
@@ -99,7 +105,7 @@ String readUserId() {
 // Function to send a keep-alive signal to prevent disconnection
 void sendKeepAliveSignal() {
     Serial.println("Sending keep-alive signal...");
-    mySerial.println("KEEP_ALIVE");  // Send a dummy message to keep the connection alive
+     // Send a dummy message to keep the connection alive
 }
 
 #endif
