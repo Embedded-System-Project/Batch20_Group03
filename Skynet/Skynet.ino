@@ -13,9 +13,7 @@ void setup() {
     Serial.begin(9600);
     pinMode(BUTTON_PIN, INPUT_PULLUP);  // Configure button as input with pull-up resistor
     mySerial.begin(9600);
-    pinMode(BLUE_TOOTH_POWER_PIN, OUTPUT);  // Set pin 7 as output
-    Serial.println("HC-06 Ready! Waiting for message...");
-    
+
     // Read stored UserId from EEPROM on startup
     String storedUserId = readUserId();
     Serial.print("Stored UserId: ");
@@ -25,25 +23,6 @@ void setup() {
 void loop() { 
     toggleSystemState();  // Check button press to toggle state
 
-    if (systemRunning) {
-        digitalWrite(BLUE_TOOTH_POWER_PIN, HIGH);
-        Serial.println("System is ON: Running loop functions...");
-        captureBluetoothData(); // Call function from external file
-
-        if (Serial.available()) {
-            String message = Serial.readString();  
-            Serial.print("Sending to Bluetooth: ");
-            Serial.println(message);
-        }
-
-        if (mySerial.available()) {
-            String receivedMessage = mySerial.readString();
-            Serial.print("Received from Bluetooth: ");
-            Serial.println(receivedMessage);
-        }
-    }else
-    {
-        digitalWrite(BLUE_TOOTH_POWER_PIN, LOW);  // Set pin 13 to LOW (OFF)  
     }
 }
 
@@ -66,6 +45,5 @@ void toggleSystemState() {
             while (digitalRead(BUTTON_PIN) == LOW);  // Wait for button release
         }
     }
-    
-    lastButtonState = currentButtonState;
+
 }
