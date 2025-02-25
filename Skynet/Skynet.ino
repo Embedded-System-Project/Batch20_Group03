@@ -14,6 +14,9 @@ void setup() {
     Serial.println("HC-06 Ready! Waiting for message...");
     mySerial.begin(9600);
 
+    // Initialize the sockets
+    setupSockets();
+
     // Read stored UserId from EEPROM on startup
     String storedUserId = readUserId();
     Serial.print("Stored UserId: ");
