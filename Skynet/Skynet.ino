@@ -1,7 +1,6 @@
 #include <SoftwareSerial.h>
 #include <EEPROM.h>
 #include "auth_handler.h"  // Include the external file
-//#include "resetter.h" // Include the external file
 
 #define BUTTON_PIN 12  // Push button connected to pin 12
 #define BLUE_TOOTH_POWER_PIN 13
