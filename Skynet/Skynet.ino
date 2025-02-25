@@ -27,7 +27,7 @@ void loop() {
     toggleSystemState();  // Check button press to toggle state
 
     if (systemRunning) {
-        digitalWrite(LED_PIN, HIGH);
+        digitalWrite(BLUE_TOOTH_POWER_PIN, HIGH);
         Serial.println("System is ON: Running loop functions...");
         captureBluetoothData(); // Call function from external file
 
@@ -44,7 +44,7 @@ void loop() {
         }
     }else
     {
-        digitalWrite(LED_PIN, LOW);  // Set pin 13 to LOW (OFF)  
+        digitalWrite(BLUE_TOOTH_POWER_PIN, LOW);  // Set pin 13 to LOW (OFF)  
     }
 }
 
