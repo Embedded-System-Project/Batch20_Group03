@@ -95,7 +95,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                           title: Text(device['name'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           subtitle: Text("Current Status: ${device['status'] ? 'On' : 'Off'}"),
                           trailing: Switch(
-                            value: device['status'] ?? false,
+                            value: device['status'] ?? false, // Default to false if null
                             onChanged: (bool value) {
                               setState(() {
                                 device['status'] = value;
@@ -103,6 +103,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                               _updateDeviceStatus(device, value);
                             },
                           ),
+
                         ),
                       );
                     },
@@ -130,14 +131,14 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       print("User ID not found in SharedPreferences.");
       return;
     }
+    int socketID = device['socket']+1;
     print("socket${device["socket"]}");
     final data = {
       "action":"ctrl",
-      "socket":device['socket']+1,
+      "socket":socketID,
       "user": userId,
       "status": status?1:0
     };
-
     BluetoothHandler().sendData(data);
     // Optionally, show a Snackbar or other feedback to the user
     ScaffoldMessenger.of(context).showSnackBar(

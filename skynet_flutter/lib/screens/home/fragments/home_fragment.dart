@@ -47,27 +47,39 @@ class _HomeFragmentState extends State<HomeFragment> {
     print("Loaded Address: $_address");
     // Only attempt to connect if _address is not empty
     if (_address.isNotEmpty) {
-      await BluetoothHandler().connect(_address);
+      // await BluetoothHandler().connect(_address);
       const data = {
         "action":"sockets",
         "sockets":[0,1,1,0,0,1,1,0]
       };
       // await BluetoothHandler().sendData(data);
-      startHartBeatScheduler();
+      await startHartBeatScheduler();
     } else {
       print("No address available to connect.");
     }
   }
 
+  bool _bluetoothStreamSubscribed = false;
+
   void _checkBluetoothConnection() {
-    BluetoothHandler().onConnectionStatusChanged.listen((bool isConnected) {
-      if (mounted) {
-        setState(() {
-          _isBluetoothConnected = isConnected;
-        });
-      }
+    if (!_bluetoothStreamSubscribed) {
+      BluetoothHandler().onConnectionStatusChanged.listen((bool isConnected) {
+        if (mounted && _isBluetoothConnected != isConnected) {
+          setState(() {
+            _isBluetoothConnected = isConnected;
+          });
+        }
+      });
+      _bluetoothStreamSubscribed = true; // Set flag to true after subscription
+    }
+
+    // Update the state to reflect the current connection status
+    setState(() {
+      _isBluetoothConnected = BluetoothHandler().isConnected;
     });
   }
+
+
 
 
   @override

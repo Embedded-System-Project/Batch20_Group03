@@ -27,7 +27,7 @@ class _AddFragmentState extends State<AddFragment> {
   @override
   void initState() {
     super.initState();
-    _roomDataList = List.from(room_data_list);
+    _roomDataList = List.from(room_data_list ?? []);
     _socketBoxes = List.generate(8, (index) {
       return {
         "id": index,
@@ -179,7 +179,7 @@ class _AddFragmentState extends State<AddFragment> {
 
     final data = {
       "action":"ctrl",
-      "socket":socketId,
+      "socket":socketId+1,
       "user": userId,
       "status": 0
     };
