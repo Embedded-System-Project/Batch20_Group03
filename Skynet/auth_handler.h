@@ -4,6 +4,8 @@
 #include <SoftwareSerial.h>
 #include <EEPROM.h>
 
+#include "controller.h" 
+
 // External references from main file
 extern SoftwareSerial mySerial;
 extern const int EEPROM_ADDRESS;
@@ -34,9 +36,6 @@ void captureBluetoothData() {
         String extractedUserId = "";
         String extractedAction = "";
 
-
-            Serial.println("userIdIndex--"+userIdIndex);
-
         if (userIdIndex != -1) {
             int startIndex = userIdIndex + 11; 
             int endIndex = receivedMessage.indexOf("\"", startIndex);
@@ -52,19 +51,40 @@ void captureBluetoothData() {
             Serial.print("Extracted Action: ");
             Serial.println(extractedAction);
 
-            // Check if action is "auth" before saving UserId
+            // If the action is "auth", handle authentication
             if (extractedAction == "auth") {
                 Serial.println("Auth action received! Saving UserId...");
                 saveUserId(extractedUserId);
+            }
+            // If the action is "ctrl", handle socket control
+            else if (extractedAction == "ctrl") {
+                int socketIndex = receivedMessage.indexOf("\"socket\":");
+                int statusIndex = receivedMessage.indexOf("\"status\":");
+
+                if (socketIndex != -1 && statusIndex != -1) {
+                    // Extract socket number
+                    int socketStart = socketIndex + 9;
+                    int socketEnd = receivedMessage.indexOf(",", socketStart);
+                    int socketNum = receivedMessage.substring(socketStart, socketEnd).toInt();
+
+                    // Extract status (0 or 1)
+                    int statusStart = statusIndex + 9;
+                    int statusEnd = receivedMessage.indexOf("}", statusStart);
+                    int status = receivedMessage.substring(statusStart, statusEnd).toInt();
+
+                    // Call the function from controller.h to activate the socket
+                    //Serial.println(socketNum, status);
+                    controlSocket(socketNum, status);
+                }
             }
         }
 
         // Check if UserId matches the one stored in EEPROM
         String storedUserId = readUserId();
-          Serial.println("hi--"+extractedUserId);
-          Serial.println("Hello--"+storedUserId);
+        Serial.println("hi--" + extractedUserId);
+        Serial.println("Hello--" + storedUserId);
         if (true) {
-           mySerial.println("=Auth Successfully");
+            mySerial.println("=Auth Successfully");
             Serial.println("UserId Matched: Verified Successfully!");
             mySerial.println("OK");  // Send response to keep connection alive
         } else {
