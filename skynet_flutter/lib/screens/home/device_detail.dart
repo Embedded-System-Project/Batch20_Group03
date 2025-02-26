@@ -19,7 +19,7 @@ class DeviceDetailScreen extends StatefulWidget {
 
 class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
   late Future<List<Map<String, dynamic>>> _deviceList;
-  bool _isSnackBarVisible = false; // Flag to check if SnackBar is visible
+  bool _isSnackBarVisible = false;
 
   @override
   void initState() {
@@ -88,21 +88,53 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          // contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          contentPadding: const EdgeInsets.only(left: 20, right: 0, top: 10, bottom: 10),
                           title: Text(device['name'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           subtitle: Text("Current Status: ${device['status'] ? 'On' : 'Off'}"),
-                          trailing: Switch(
-                            value: device['status'] ?? false,
-                            onChanged: BluetoothHandler().isConnected
-                                ? (bool value) {
-                              setState(() {
-                                device['status'] = value;
-                              });
-                              _updateDeviceStatus(device, value);
-                            }
-                                : (value) {
-                              _showErrorSnackBar('Bluetooth is not connected. Please connect the device first.');
-                            }, // Show error message if Bluetooth is not connected
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Switch to toggle device status
+                              Switch(
+                                value: device['status'] ?? false,
+                                onChanged: BluetoothHandler().isConnected
+                                    ? (bool value) {
+                                  setState(() {
+                                    device['status'] = value;
+                                  });
+                                  _updateDeviceStatus(device, value);
+                                }
+                                    : (value) {
+                                  _showErrorSnackBar('Bluetooth is not connected. Please connect the device first.');
+                                },
+                              ),
+                              // Popup Menu Button for Edit and Delete options, moved to the right side
+                              PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert),
+                                onSelected: (String value) {
+                                  if (value == 'edit') {
+                                    // Handle Edit option
+                                    _showEditDialog(device);
+                                  } else if (value == 'delete') {
+                                    // Handle Delete option
+                                    _showDeleteConfirmationDialog(device);
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) {
+                                  return [
+                                    const PopupMenuItem<String>(
+                                      value: 'edit',
+                                      child: Text('Edit'),
+                                    ),
+                                    const PopupMenuItem<String>(
+                                      value: 'delete',
+                                      child: Text('Delete'),
+                                    ),
+                                  ];
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -117,8 +149,9 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     );
   }
 
+  // Show Snackbar for Bluetooth error
   void _showErrorSnackBar(String message) {
-    if (_isSnackBarVisible) return; // Prevent showing multiple SnackBars
+    if (_isSnackBarVisible) return;
     _isSnackBarVisible = true;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -128,7 +161,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       ),
     );
 
-    // Reset the flag after the SnackBar disappears
     Future.delayed(Duration(seconds: 3), () {
       setState(() {
         _isSnackBarVisible = false;
@@ -142,7 +174,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
     final roomName = widget.roomName;
     final deviceCategory = widget.deviceType;
 
-    // Updating the device status and appending the timestamp
     await dbService.updateDeviceStatus(roomName, deviceCategory, device['name'], status, DateTime.now().toIso8601String());
     final prefsService = SharedPreferencesService();
     final userId = await prefsService.getUserId();
@@ -151,7 +182,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       return;
     }
     int socketID = device['socket'] + 1;
-    print("socket${device["socket"]}");
     final data = {
       "action": "ctrl",
       "socket": socketID,
@@ -159,9 +189,100 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       "status": status ? 1 : 0
     };
     BluetoothHandler().sendData(data);
-    // Optionally, show a Snackbar or other feedback to the user
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Device status updated to: ${status ? 'On' : 'Off'}')),
     );
   }
+
+  // Show Edit dialog (You can expand this with actual edit functionality)
+  void _showEditDialog(Map<String, dynamic> device) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Edit Device"),
+          content: const Text("Edit the device details here."),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                // Implement edit functionality here
+                Navigator.of(context).pop(); // Close the dialog after editing
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Show delete confirmation dialog
+  void _showDeleteConfirmationDialog(Map<String, dynamic> device) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Delete Device"),
+          content: const Text("Are you sure you want to delete this device?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteDevice(device);
+                Navigator.of(context).pop(); // Close the dialog after deletion
+              },
+              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteDevice(Map<String, dynamic> device) async {
+    final dbService = DbService();
+    final roomName = widget.roomName;
+    final deviceCategory = widget.deviceType;
+
+    // Delete the device from the database
+    await dbService.deleteDevice(roomName, deviceCategory, device['name']);
+
+    // Send Bluetooth message with status 0 (to indicate the device is off)
+    final prefsService = SharedPreferencesService();
+    final userId = await prefsService.getUserId();
+    if (userId == null) {
+      print("User ID not found in SharedPreferences.");
+      return;
+    }
+    int socketID = device['socket'] + 1; // Adjust socketID based on your logic
+    final data = {
+      "action": "ctrl",
+      "socket": socketID,
+      "user": userId,
+      "status": 0, // Setting status to 0 to indicate "Off"
+    };
+
+    await BluetoothHandler().sendData(data);
+
+    // Refresh the device list after deletion
+    setState(() {
+      _deviceList = _fetchDevices(); // Fetch updated list after deletion
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Device "${device['name']}" deleted successfully.')),
+    );
+  }
+
 }

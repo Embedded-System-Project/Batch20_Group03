@@ -27,7 +27,7 @@ class _AddFragmentState extends State<AddFragment> {
   @override
   void initState() {
     super.initState();
-    _roomDataList = List.from(room_data_list ?? []);
+    _roomDataList = List.from(room_data_list);
     _socketBoxes = List.generate(8, (index) {
       return {
         "id": index,
@@ -179,7 +179,7 @@ class _AddFragmentState extends State<AddFragment> {
 
     final data = {
       "action":"ctrl",
-      "socket":socketId+1,
+      "socket":socketId,
       "user": userId,
       "status": 0
     };
@@ -212,10 +212,6 @@ class _AddFragmentState extends State<AddFragment> {
     print("Device saved and state reset.");
   }
 
-  void printTestConnectionValue() {
-    print("Test Connection is: $_testConnection");
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -238,42 +234,113 @@ class _AddFragmentState extends State<AddFragment> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Other widgets...
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Switch(
-                            value: _testConnection,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _testConnection = value;
-                              });
-                              // Print the value of the switch when it is toggled
-                              printTestConnectionValue();
-                            },
-                            activeColor: Colors.blueAccent,
-                            inactiveTrackColor: Colors.blueAccent.withOpacity(0.2),
-                          ),
-                          Text("Test Connection", style: TextStyle(fontSize: 16)),
-                        ],
-                      ),
-                    ],
-                  ),
-                  // Other widgets...
-                ],
+              padding: const EdgeInsets.all(16.0),
+              child: RoomSection(
+                selectedIndex: _selectedRoomIndex,
+                onRoomSelected: (index) {
+                  setState(() {
+                    _selectedRoomIndex = index;
+                    _selectedDevice = "";
+                    _isDeviceSelected = false;
+                    _selectedSocketIndex = null;
+
+                    // Reset socket statuses (except for blocked ones)
+                    _socketBoxes = List.generate(8, (i) => {"id": i, "status": 0});
+                  });
+                },
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                controller: _deviceNameController,
+                decoration: InputDecoration(
+                  labelText: 'Enter Device Name',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                ),
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GridView.builder(
+                itemCount: _roomDataList[_selectedRoomIndex]['devices'].length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemBuilder: (BuildContext context, int index) {
+                  final device = _roomDataList[_selectedRoomIndex]['devices'][index];
+                  return GestureDetector(
+                    onTap: () => _onDeviceSelected(
+                      _roomDataList[_selectedRoomIndex]['name'],
+                      device,
+                    ),
+                    child: DeviceCard(
+                      key: ValueKey(_roomDataList[_selectedRoomIndex]['name'] +
+                          " - " +
+                          device["name"]),
+                      isSelected: _selectedDevice ==
+                          (_roomDataList[_selectedRoomIndex]['name'] + " - " + device["name"]),
+                      room: _roomDataList[_selectedRoomIndex]['name'],
+                      device: device,
+                    ),
+                  );
+                },
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+              ),
+            ),
+            socketSelector(),
+            if (_selectedSocketIndex != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Test Connection switch and label in a left-aligned Column
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Switch(
+                              value: _testConnection,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  _testConnection = value;
+                                });
+                              },
+                              activeColor: Colors.blueAccent,
+                              inactiveTrackColor: Colors.blueAccent.withOpacity(0.2),
+                            ),
+                            Text("Test Connection", style: TextStyle(fontSize: 16)),
+                          ],
+                        ),
+                      ],
+                    ),
+                    // Save button on the right side
+                    ElevatedButton(
+                      onPressed: _onSaveButtonPressed,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text("Save", style: TextStyle(fontSize: 16, color: Colors.white)),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
     );
   }
-
 }
