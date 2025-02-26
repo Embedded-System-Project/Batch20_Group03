@@ -18,7 +18,10 @@ void setup() {
     Serial.println("HC-06 Ready! Waiting for message...");
 
     // Initialize the sockets
+
 //    setupSockets();
+
+
 
     // Read stored UserId from EEPROM on startup
     String storedUserId = readUserId();
@@ -31,7 +34,9 @@ void loop() {
 
     if (systemRunning) {
         digitalWrite(BLUE_TOOTH_POWER_PIN, HIGH);
+
 //        Serial.println("System is ON: Running loop functions...");
+
         captureBluetoothData(); // Call function from external file
 
         if (Serial.available()) {
