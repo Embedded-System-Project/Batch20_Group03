@@ -149,14 +149,14 @@ class _SchedulerScreenState extends State<SchedulerScreen> {
                     const PopupMenuItem(
                       value: 'edit',
                       child: ListTile(
-                        leading: Icon(Icons.edit, color: Colors.blue),
+                        // leading: Icon(Icons.edit, color: Colors.blue),
                         title: Text("Edit"),
                       ),
                     ),
                     const PopupMenuItem(
                       value: 'delete',
                       child: ListTile(
-                        leading: Icon(Icons.delete, color: Colors.red),
+                        // leading: Icon(Icons.delete, color: Colors.red),
                         title: Text("Delete"),
                       ),
                     ),

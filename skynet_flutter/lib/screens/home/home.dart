@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skynet/screens/home/fragments/add_fragment.dart';
+import 'package:skynet/screens/home/fragments/analysis_fragment.dart';
 import 'package:skynet/screens/home/fragments/home_fragment.dart';
 import 'package:skynet/screens/home/fragments/scheduler_screen.dart';
 
@@ -14,7 +15,7 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final screens = [
     HomeFragment(),
-    Container(color: Colors.red,),
+    AnalysisFragment(),
     AddFragment(),
     SchedulerScreen(),
     Container(color: Colors.blue,),
