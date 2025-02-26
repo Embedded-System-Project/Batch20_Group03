@@ -18,7 +18,10 @@ void setup() {
     Serial.println("HC-06 Ready! Waiting for message...");
 
     // Initialize the sockets
-    setupSockets();
+
+//    setupSockets();
+
+
 
     // Read stored UserId from EEPROM on startup
     String storedUserId = readUserId();
@@ -31,7 +34,9 @@ void loop() {
 
     if (systemRunning) {
         digitalWrite(BLUE_TOOTH_POWER_PIN, HIGH);
-        Serial.println("System is ON: Running loop functions...");
+
+//        Serial.println("System is ON: Running loop functions...");
+
         captureBluetoothData(); // Call function from external file
 
         if (Serial.available()) {
@@ -53,7 +58,7 @@ void loop() {
 
 // Function to detect button press and toggle system state
 void toggleSystemState() {
-    Serial.println("pressing button");
+//    Serial.println("pressing button");
     static bool lastButtonState = HIGH;
     static unsigned long lastDebounceTime = 0;
     const unsigned long debounceDelay = 50;
@@ -66,6 +71,16 @@ void toggleSystemState() {
             systemRunning = !systemRunning; // Toggle system state
             Serial.print("System State: ");
             Serial.println(systemRunning ? "ON" : "OFF");
+
+            if(systemRunning==true){
+              setupSockets();
+
+              }else{
+                for (int pin = 2; pin <= 9; pin++) {
+    digitalWrite(pin, LOW);
+}
+
+              }
             
             while (digitalRead(BUTTON_PIN) == LOW);  // Wait for button release
         }

@@ -18,7 +18,7 @@ void loop() {
     } else {  // Button is released
         if (buttonPressed) {  // If it was pressed before
             unsigned long pressDuration = millis() - pressStartTime;
-            if (pressDuration >= LONG_PRESS_THRESHOLD) {
+            if (pressDuration >= 5000) {
                 Serial.println("Long Press Detected!");
             } else {
                 Serial.println("Short Press Detected!");
