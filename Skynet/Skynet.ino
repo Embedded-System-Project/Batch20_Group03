@@ -89,7 +89,7 @@ void toggleSystemState() {
                     setupSockets();  // Start the system
                 } else {
                     for (int pin = 2; pin <= 9; pin++) {
-                        digitalWrite(pin, LOW);  // Turn off pins
+                        digitalWrite(pin, HIGH);  // Turn off pins
                     }
                 }
             } else {
