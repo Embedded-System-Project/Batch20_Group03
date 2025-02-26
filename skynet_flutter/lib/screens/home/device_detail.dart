@@ -19,6 +19,7 @@ class DeviceDetailScreen extends StatefulWidget {
 
 class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
   late Future<List<Map<String, dynamic>>> _deviceList;
+  bool _isSnackBarVisible = false; // Flag to check if SnackBar is visible
 
   @override
   void initState() {
@@ -36,9 +37,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       return [];
     }
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +77,6 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
 
             return Column(
               children: [
-                // ListView of devices
                 Expanded(
                   child: ListView.builder(
                     itemCount: devices.length,
@@ -95,15 +92,18 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
                           title: Text(device['name'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           subtitle: Text("Current Status: ${device['status'] ? 'On' : 'Off'}"),
                           trailing: Switch(
-                            value: device['status'] ?? false, // Default to false if null
-                            onChanged: (bool value) {
+                            value: device['status'] ?? false,
+                            onChanged: BluetoothHandler().isConnected
+                                ? (bool value) {
                               setState(() {
                                 device['status'] = value;
                               });
                               _updateDeviceStatus(device, value);
-                            },
+                            }
+                                : (value) {
+                              _showErrorSnackBar('Bluetooth is not connected. Please connect the device first.');
+                            }, // Show error message if Bluetooth is not connected
                           ),
-
                         ),
                       );
                     },
@@ -115,6 +115,25 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
         ),
       ),
     );
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (_isSnackBarVisible) return; // Prevent showing multiple SnackBars
+    _isSnackBarVisible = true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 3),
+      ),
+    );
+
+    // Reset the flag after the SnackBar disappears
+    Future.delayed(Duration(seconds: 3), () {
+      setState(() {
+        _isSnackBarVisible = false;
+      });
+    });
   }
 
   // Function to update device status in the database
@@ -131,13 +150,13 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       print("User ID not found in SharedPreferences.");
       return;
     }
-    int socketID = device['socket']+1;
+    int socketID = device['socket'] + 1;
     print("socket${device["socket"]}");
     final data = {
-      "action":"ctrl",
-      "socket":socketID,
+      "action": "ctrl",
+      "socket": socketID,
       "user": userId,
-      "status": status?1:0
+      "status": status ? 1 : 0
     };
     BluetoothHandler().sendData(data);
     // Optionally, show a Snackbar or other feedback to the user
