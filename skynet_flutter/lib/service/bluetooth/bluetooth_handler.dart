@@ -130,6 +130,33 @@ class BluetoothHandler {
     }
   }
 
+
+  Future<void> sendAuth(Object data) async {
+
+    while (_isSending) {
+      print("Waiting for previous message to be sent...");
+      await Future.delayed(Duration(milliseconds: 1000));
+    }
+
+    _isSending = true;
+    String message = jsonEncode(data);
+    print("Sent data: $message");
+    try {
+      await _bluetooth.write(message);
+      _isConnected = true;
+    } catch (e) {
+      print("Failed to send data. Device might be disconnected.");
+      _handleDisconnection();
+      return;
+    }
+    Future.delayed(Duration(milliseconds: 1000*2), () {
+      _isSending = false;
+      print("Ready to send next message.");
+    });
+  }
+
+
+
   /// Send data to the connected Bluetooth device
   Future<void> sendData(Object data) async {
 

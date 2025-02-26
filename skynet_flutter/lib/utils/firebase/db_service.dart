@@ -4,6 +4,7 @@ import 'package:skynet/data/room_data.dart';
 import 'package:skynet/enum/db_collections.dart';
 import 'package:skynet/utils/firebase/init_firebase.dart';
 import 'package:skynet/utils/shared_preferences/shared_preferences_service.dart';
+import 'package:uuid/uuid.dart';
 
 class DbService {
   final _dbService = FirebaseService();
@@ -316,9 +317,7 @@ class DbService {
     return [];
   }
 
-  Future<void> saveSchedulerData({
-    required Map<String, dynamic> schedulerData,  // Accepting the entire schedulerData as a parameter
-  }) async {
+  Future<void> saveSchedulerData({ required Map<String, dynamic> schedulerData,}) async {
     try {
       final prefsService = SharedPreferencesService();
       final userId = await prefsService.getUserId();
@@ -331,7 +330,8 @@ class DbService {
       schedulerData['userId'] = userId;
 
       // Save the scheduler data to the database (Firestore)
-      await _dbService.create(DbCollections.schedulers.key, schedulerData, userId);
+      String uuid = Uuid().v4();
+      await _dbService.create(DbCollections.schedulers.key, schedulerData, uuid);
 
       log("Scheduler data saved successfully.");
     } catch (e) {

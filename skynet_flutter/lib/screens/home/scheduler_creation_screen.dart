@@ -175,9 +175,17 @@ class _SchedulerCreationScreenState extends State<SchedulerCreationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Create Scheduler", style: TextStyle(color: Colors.white)),
-        automaticallyImplyLeading: true,
+        title: const Text("Create a Schedule", style: TextStyle(color: Colors.white)),
+        automaticallyImplyLeading: false,
         backgroundColor: const Color.fromARGB(255, 6, 26, 94),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications, color: Colors.white),
+            onPressed: () {
+              // Handle notification icon press
+            },
+          ),
+        ],
         elevation: 4.0,
         shadowColor: Colors.black.withOpacity(0.5),
       ),
