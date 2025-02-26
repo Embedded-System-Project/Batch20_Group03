@@ -19,7 +19,7 @@ void sendKeepAliveSignal();
 
 void captureBluetoothData() {
   delay(10);
-//   Serial.print("Inside: ");
+
     if (mySerial.available()) {  
         String receivedMessage = "";  
            Serial.print("Inside 2: ");
@@ -86,12 +86,10 @@ void captureBluetoothData() {
 
         // Check if UserId matches the one stored in EEPROM
         String storedUserId = readUserId();
-        Serial.println("hi--" + extractedUserId);
-        Serial.println("Hello--" + storedUserId);
+   
         if (true) {
             mySerial.println("=Auth Successfully");
             Serial.println("UserId Matched: Verified Successfully!");
-//            mySerial.println("OK");  // Send response to keep connection alive
         } else {
             Serial.print("Stored UserId: ");
             Serial.println(storedUserId);

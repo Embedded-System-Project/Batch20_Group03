@@ -93,13 +93,12 @@ void toggleSystemState() {
                     }
                 }
             } else {
-                // Long press: You can add any specific logic for long press here
-                  for (int i = 0; i < EEPROM.length(); i++) {
-                    EEPROM.write(i, 0xFF); // Writing 0xFF (default erased state)
-                  }
-                  delay(100);
-                  setupSockets();
-                  systemRunning=true;
+                      // Long press: You can add any specific logic for long press here
+                resetEEPROM();
+                delay(100);
+                Serial.print("Long Pressing ");
+                setupSockets();
+                systemRunning = true;
                   
                   
 
@@ -110,4 +109,16 @@ void toggleSystemState() {
     }
 
     lastButtonState = currentButtonState;  // Save last state
+}
+
+
+
+void resetEEPROM() {
+    Serial.println("Resetting EEPROM...");
+
+    for (int i = 0; i < 8; i++) {
+        EEPROM.write(EEPROM_ADDRESS + i, 0);  // Set all 8 values to 0
+    }
+    
+    Serial.println("EEPROM Reset Done. All values set to 0.");
 }
