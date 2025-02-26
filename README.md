@@ -65,24 +65,7 @@ Circuit diagram.png
 
 ---
 
-## 📜 Getting Started
 
-### 1️⃣ Prerequisites
-- Flutter installed
-- Firebase project set up
-- Arduino components wired up
-
-### 2️⃣ Installation
-```sh
-git clone https://github.com/yourusername/SkynetHomeAutomation.git
-
-### 3️⃣ Firebase Setup
-- Add **google-services.json** (Android) and **GoogleService-Info.plist** (iOS) to the respective directories.
-
-### 4️⃣ Deploying to Device
-- Ensure Bluetooth and Firebase are correctly configured before running the app.
-
----
 
 Enjoy automating your home with **Skynet Home Automation**! 🎉
 
