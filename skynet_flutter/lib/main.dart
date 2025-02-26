@@ -21,7 +21,7 @@ class MainApp extends StatelessWidget {
     final sharedPreferencesService = SharedPreferencesService();
     try {
       await Firebase.initializeApp();
-      startHartBeatScheduler();
+      // await startHartBeatScheduler();
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         // Check if the user is verified

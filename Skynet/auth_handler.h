@@ -15,10 +15,14 @@ void saveUserId(String userId);
 String readUserId();
 void captureBluetoothData();
 void sendKeepAliveSignal();
+  
 
 void captureBluetoothData() {
+  delay(10);
+//   Serial.print("Inside: ");
     if (mySerial.available()) {  
         String receivedMessage = "";  
+           Serial.print("Inside 2: ");
 
         while (mySerial.available()) {  
             char receivedChar = mySerial.read();  
@@ -58,6 +62,7 @@ void captureBluetoothData() {
             }
             // If the action is "ctrl", handle socket control
             else if (extractedAction == "ctrl") {
+              
                 int socketIndex = receivedMessage.indexOf("\"socket\":");
                 int statusIndex = receivedMessage.indexOf("\"status\":");
 
@@ -86,7 +91,7 @@ void captureBluetoothData() {
         if (true) {
             mySerial.println("=Auth Successfully");
             Serial.println("UserId Matched: Verified Successfully!");
-            mySerial.println("OK");  // Send response to keep connection alive
+//            mySerial.println("OK");  // Send response to keep connection alive
         } else {
             Serial.print("Stored UserId: ");
             Serial.println(storedUserId);

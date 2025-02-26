@@ -3,6 +3,7 @@ import 'dart:convert'; // For UTF-8 decoding
 import 'dart:typed_data'; // For Uint8List
 import 'package:bluetooth_classic/bluetooth_classic.dart';
 import 'package:skynet/enum/device_configuration.dart';
+import 'package:skynet/utils/shared_preferences/shared_preferences_service.dart';
 
 class BluetoothHandler {
   // Singleton pattern
@@ -30,7 +31,8 @@ class BluetoothHandler {
   /// Streams for listening to real-time received data and connection status
   Stream<Uint8List> get onDataReceived => _dataStreamController.stream;
   Stream<String> get onTextReceived => _textStreamController.stream;
-  Stream<bool> get onConnectionStatusChanged => _connectionStatusController.stream;
+  Stream<bool> get onConnectionStatusChanged =>
+      _connectionStatusController.stream;
 
   /// Getters for connection status and last received data
   bool get isConnected => _isConnected;
@@ -53,6 +55,7 @@ class BluetoothHandler {
   Future<void> connect(String macAddress) async {
     if (_isConnected) return;
     try {
+      print("Connecting to $macAddress");
       await _bluetooth.connect(macAddress, DeviceConfiguration.serialUUID.key);
       _isConnected = true;
       _connectionStatusController.add(true); // Notify listeners
@@ -61,7 +64,6 @@ class BluetoothHandler {
       _bluetooth.onDeviceDataReceived().listen((event) {
         _lastReceivedData = event;
         _dataStreamController.add(event);
-
         try {
           String decodedMessage = utf8.decode(event, allowMalformed: true).trim();
           _lastReceivedText = decodedMessage;
@@ -70,10 +72,28 @@ class BluetoothHandler {
           String asciiMessage = String.fromCharCodes(event).trim();
           _lastReceivedText = asciiMessage;
           _textStreamController.add(asciiMessage);
+          _isConnected = false;
+        }
+      });
+      _bluetooth.onDeviceStatusChanged().listen((event) {
+        print("printing event ${event == 2}");
+        if (event == 2) {
+          // Device is connected
+          _isConnected = true;
+          _connectionStatusController.add(true); // Notify listeners
+          print("Device Connected!");
+        } else if (event == 0) {
+          // Device is disconnected
+          _isConnected = false;
+          _connectionStatusController.add(false); // Notify listeners
+          print("Device Disconnected!");
         }
       });
 
-      // Start monitoring connection by sending test messages
+
+
+
+        // Start monitoring connection by sending test messages
       _monitorConnectionStatus();
 
     } catch (e) {
@@ -105,13 +125,41 @@ class BluetoothHandler {
   void _handleDisconnection() {
     if (_isConnected) {
       _isConnected = false;
-      _connectionStatusController.add(false); // Notify listeners
+      _connectionStatusController.add(false); // Notify listeners about disconnection
       print("Device Disconnected!");
     }
   }
 
+
+  Future<void> sendAuth(Object data) async {
+
+    while (_isSending) {
+      print("Waiting for previous message to be sent...");
+      await Future.delayed(Duration(milliseconds: 1000));
+    }
+
+    _isSending = true;
+    String message = jsonEncode(data);
+    print("Sent data: $message");
+    try {
+      await _bluetooth.write(message);
+      _isConnected = true;
+    } catch (e) {
+      print("Failed to send data. Device might be disconnected.");
+      _handleDisconnection();
+      return;
+    }
+    Future.delayed(Duration(milliseconds: 1000*2), () {
+      _isSending = false;
+      print("Ready to send next message.");
+    });
+  }
+
+
+
   /// Send data to the connected Bluetooth device
   Future<void> sendData(Object data) async {
+
     if (!_isConnected) {
       print("No Bluetooth device connected.");
       return;
@@ -119,13 +167,12 @@ class BluetoothHandler {
 
     while (_isSending) {
       print("Waiting for previous message to be sent...");
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(Duration(milliseconds: 1000));
     }
 
     _isSending = true;
     String message = jsonEncode(data);
     print("Sent data: $message");
-
     try {
       await _bluetooth.write(message);
     } catch (e) {
@@ -133,8 +180,7 @@ class BluetoothHandler {
       _handleDisconnection();
       return;
     }
-
-    Future.delayed(Duration(seconds: 3), () {
+    Future.delayed(Duration(milliseconds: 1000*2), () {
       _isSending = false;
       print("Ready to send next message.");
     });
