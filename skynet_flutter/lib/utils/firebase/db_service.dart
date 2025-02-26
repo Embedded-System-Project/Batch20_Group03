@@ -119,6 +119,82 @@ class DbService {
     }
   }
 
+  Future<void> deleteDevice(String roomName, String category, String deviceName) async {
+    final prefsService = SharedPreferencesService();
+    final userId = await prefsService.getUserId();
+
+    if (userId == null) {
+      log("User ID not found in SharedPreferences.");
+      return;
+    }
+
+    // Read the current room data from Firebase
+    final data = await _dbService.read(DbCollections.rooms.key, userId);
+    if (data == null) {
+      log("No data found for user $userId");
+      return;
+    }
+
+    // Check if the room and category exist
+    if (data.containsKey(roomName) && data[roomName].containsKey(category)) {
+      List<dynamic> devices = List.from(data[roomName][category]);
+
+      // Find and remove the device with the specified name
+      devices.removeWhere((device) => device['name'] == deviceName);
+
+      // Update the category with the remaining devices
+      data[roomName][category] = devices;
+
+      // Save the updated data back to Firebase
+      await _dbService.create(DbCollections.rooms.key, data, userId);
+
+      log("Device '$deviceName' deleted from room '$roomName' under category '$category'");
+    } else {
+      log("Room '$roomName' or category '$category' not found.");
+    }
+  }
+
+
+  Future<void> updateDeviceDetails(String roomName, String category, String oldDeviceName, String newDeviceName, int newSocketId) async {
+    final prefsService = SharedPreferencesService();
+    final userId = await prefsService.getUserId();
+
+    if (userId == null) {
+      log("User ID not found in SharedPreferences.");
+      return;
+    }
+
+    // Read the current room data from Firebase
+    final data = await _dbService.read(DbCollections.rooms.key, userId);
+    if (data == null) {
+      log("No data found for user $userId");
+      return;
+    }
+
+    // Check if the room and category exist
+    if (data.containsKey(roomName) && data[roomName].containsKey(category)) {
+      List<dynamic> devices = List.from(data[roomName][category]);
+
+      // Find the device by its old name and update its details
+      for (var device in devices) {
+        if (device['name'] == oldDeviceName) {
+          // Update the device's details
+          device['name'] = newDeviceName; // Update the device name
+          device['socket'] = newSocketId; // Update the socket ID
+
+          // Optionally add logic to update other fields if necessary
+          log("Device '$oldDeviceName' updated to '$newDeviceName' with socket ID $newSocketId");
+
+          break;
+        }
+      }
+
+      // Save the updated data back to Firebase
+      await _dbService.create(DbCollections.rooms.key, data, userId);
+    } else {
+      log("Room '$roomName' or category '$category' not found.");
+    }
+  }
 
 
 
@@ -241,15 +317,7 @@ class DbService {
   }
 
   Future<void> saveSchedulerData({
-    required String schedulerName,
-    required String room,
-    required String deviceCategory,
-    required String? deviceName,
-    required String repetitionType,
-    required List<String> customDays,
-    required String turnOnTime,
-    required String turnOffTime,
-    required List<String> selectedDevices,
+    required Map<String, dynamic> schedulerData,  // Accepting the entire schedulerData as a parameter
   }) async {
     try {
       final prefsService = SharedPreferencesService();
@@ -259,21 +327,10 @@ class DbService {
         return;
       }
 
-      // Prepare the data to be saved
-      final schedulerData = {
-        'schedulerName': schedulerName,
-        'room': room,
-        'deviceCategory': deviceCategory,
-        'deviceName': deviceName,
-        'repetitionType': repetitionType,
-        'customDays': customDays,
-        'turnOnTime': turnOnTime,
-        'turnOffTime': turnOffTime,
-        'selectedDevices': selectedDevices,
-        'userId': userId, // You can add user ID here to link the scheduler to a user
-      };
+      // Add userId to the schedulerData if not already present
+      schedulerData['userId'] = userId;
 
-      // Save the scheduler data to the database
+      // Save the scheduler data to the database (Firestore)
       await _dbService.create(DbCollections.schedulers.key, schedulerData, userId);
 
       log("Scheduler data saved successfully.");
@@ -281,6 +338,8 @@ class DbService {
       log("Error saving scheduler data: $e");
     }
   }
+
+
 
 
 }
