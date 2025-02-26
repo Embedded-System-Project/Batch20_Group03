@@ -317,15 +317,7 @@ class DbService {
   }
 
   Future<void> saveSchedulerData({
-    required String schedulerName,
-    required String room,
-    required String deviceCategory,
-    required String? deviceName,
-    required String repetitionType,
-    required List<String> customDays,
-    required String turnOnTime,
-    required String turnOffTime,
-    required List<String> selectedDevices,
+    required Map<String, dynamic> schedulerData,  // Accepting the entire schedulerData as a parameter
   }) async {
     try {
       final prefsService = SharedPreferencesService();
@@ -335,21 +327,10 @@ class DbService {
         return;
       }
 
-      // Prepare the data to be saved
-      final schedulerData = {
-        'schedulerName': schedulerName,
-        'room': room,
-        'deviceCategory': deviceCategory,
-        'deviceName': deviceName,
-        'repetitionType': repetitionType,
-        'customDays': customDays,
-        'turnOnTime': turnOnTime,
-        'turnOffTime': turnOffTime,
-        'selectedDevices': selectedDevices,
-        'userId': userId, // You can add user ID here to link the scheduler to a user
-      };
+      // Add userId to the schedulerData if not already present
+      schedulerData['userId'] = userId;
 
-      // Save the scheduler data to the database
+      // Save the scheduler data to the database (Firestore)
       await _dbService.create(DbCollections.schedulers.key, schedulerData, userId);
 
       log("Scheduler data saved successfully.");
@@ -357,6 +338,8 @@ class DbService {
       log("Error saving scheduler data: $e");
     }
   }
+
+
 
 
 }

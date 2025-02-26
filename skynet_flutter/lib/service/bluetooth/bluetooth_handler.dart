@@ -140,7 +140,7 @@ class BluetoothHandler {
 
     while (_isSending) {
       print("Waiting for previous message to be sent...");
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(Duration(milliseconds: 1000));
     }
 
     _isSending = true;
@@ -153,7 +153,7 @@ class BluetoothHandler {
       _handleDisconnection();
       return;
     }
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(Duration(milliseconds: 1000*2), () {
       _isSending = false;
       print("Ready to send next message.");
     });
