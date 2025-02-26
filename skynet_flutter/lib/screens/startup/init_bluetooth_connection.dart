@@ -73,7 +73,7 @@ class _InitBluetoothState extends State<InitBluetooth> {
     };
 
     // Send authentication request over Bluetooth
-    await BluetoothHandler().sendData(data);
+    await BluetoothHandler().sendAuth(data);
 
     debugPrint("Waiting for authentication confirmation...");
 

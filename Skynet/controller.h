@@ -17,7 +17,7 @@ void setupSockets() {
         }
         socketStates[i] = storedState;
         pinMode(socketPins[i], OUTPUT);
-        digitalWrite(socketPins[i], socketStates[i]); // Restore state
+        digitalWrite(socketPins[i], socketStates[i]==0?1:0); // Restore state
     }
 }
 
@@ -25,7 +25,7 @@ void controlSocket(int socket, int status) {
     if (socket >= 1 && socket <= 8) {  
         int index = socket - 1;
         int pin = socketPins[index];  
-        digitalWrite(pin, status);
+        digitalWrite(pin, status==0?1:0);
         socketStates[index] = status;
 
         // Update EEPROM with new state
