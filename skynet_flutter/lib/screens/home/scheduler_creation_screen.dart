@@ -124,52 +124,55 @@ class _SchedulerCreationScreenState extends State<SchedulerCreationScreen> {
   }
 
   // Function to save the scheduler
-  Future<void> _saveScheduler() async{
+  Future<void> _saveScheduler() async {
     final dbService = DbService();
 
-    // Print the scheduler data for debugging
-    print('Scheduler Name: $schedulerName');
-    print('Repetition Type: $repetitionType');
-    if (repetitionType == 'Custom') {
-      print('Custom Days: $customDays');
-    }
-
-    // Ensure that turnOnTime and turnOffTime are not null
+    // Ensure turnOnTime and turnOffTime are not null
     final turnOnTimeStr = turnOnTime != null ? '${turnOnTime?.hour}:${turnOnTime?.minute}' : '';
     final turnOffTimeStr = turnOffTime != null ? '${turnOffTime?.hour}:${turnOffTime?.minute}' : '';
 
-    print('Turn On Time: $turnOnTimeStr');
-    print('Turn Off Time: $turnOffTimeStr');
-
-    // Display the data for all selected devices
-    print('Selected Devices:');
-    selectedDevices.forEach((device) {
-      print('- Device: ${device['device']} (Room: ${device['room']})');
-    });
-
     // Structure the data for saving
     final schedulerData = {
-      'schedulerName': schedulerName,
+      'name': schedulerName,
       'repetitionType': repetitionType,
       'customDays': customDays,
       'turnOnTime': turnOnTimeStr,
       'turnOffTime': turnOffTimeStr,
       'rooms': groupBy(selectedDevices, (device) => device['room']).map((room, devices) {
         return MapEntry(room, devices.map((device) {
-          print(device);
           return {
-            'deviceCategory': device['deviceCategory'],  // This should no longer be null
+            'deviceCategory': device['deviceCategory'],
             'device': device['device'],
           };
         }).toList());
       }),
+      "status": true
     };
-    print(schedulerData);
-    // Call the DB service to save the scheduler data
-     dbService.saveSchedulerData(schedulerData: schedulerData);
 
-    // You can add any further logic or feedback for the user here (e.g., showing a confirmation message).
+    try {
+      await dbService.saveSchedulerData(schedulerData: schedulerData);
+
+      // Show a success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Scheduler saved successfully!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Navigate back to the previous screen
+      Navigator.pop(context);
+    } catch (e) {
+      // Show an error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error saving scheduler: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +238,7 @@ class _SchedulerCreationScreenState extends State<SchedulerCreationScreen> {
                 if (selectedRoom != null && deviceCategoriesByRoom[selectedRoom] != null)
                   DropdownButtonFormField<String>(
                     value: selectedDeviceCategory,
-                    decoration: const InputDecoration(labelText: 'Select Device Category'),
+                    decoration: const InputDecoration(labelText: 'Select Device Type'),
                     items: deviceCategoriesByRoom[selectedRoom]!.map((category) {
                       return DropdownMenuItem<String>(value: category, child: Text(category));
                     }).toList(),
@@ -255,7 +258,7 @@ class _SchedulerCreationScreenState extends State<SchedulerCreationScreen> {
                 if (deviceNames.isNotEmpty)
                   DropdownButtonFormField<String>(
                     value: selectedDevice,
-                    decoration: const InputDecoration(labelText: 'Select Product Name'),
+                    decoration: const InputDecoration(labelText: 'Select Device Name'),
                     items: deviceNames.map((device) {
                       return DropdownMenuItem<String>(value: device, child: Text(device));
                     }).toList(),

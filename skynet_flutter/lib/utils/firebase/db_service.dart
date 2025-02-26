@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:skynet/data/room_data.dart';
 import 'package:skynet/enum/db_collections.dart';
 import 'package:skynet/utils/firebase/init_firebase.dart';
@@ -8,6 +9,7 @@ import 'package:uuid/uuid.dart';
 
 class DbService {
   final _dbService = FirebaseService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   saveSignUpData(String email, String name, String userId) {
     _dbService.create(
@@ -339,7 +341,31 @@ class DbService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getUserSchedulers(String userId) async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore
+          .collection(DbCollections.schedulers.key)
+          .where("userId", isEqualTo: userId)
+          .get();
 
+      return querySnapshot.docs.map((doc) {
+        return {
+          "id": doc.id, // Include document ID for reference
+          ...doc.data() as Map<String, dynamic>,
+        };
+      }).toList();
+    } catch (e) {
+      print("Error fetching schedulers: $e");
+      return [];
+    }
+  }
 
+  Future<void> deleteScheduler(String schedulerId) async {
+    await _dbService.delete(DbCollections.schedulers.key, schedulerId);
+  }
+
+  Future<void> updateSchedulerStatus(String schedulerId, bool newStatus) async {
+    await _dbService.update(DbCollections.schedulers.key, schedulerId, {'status': newStatus});
+  }
 
 }
