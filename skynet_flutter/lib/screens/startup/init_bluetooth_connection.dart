@@ -1,10 +1,6 @@
 import 'dart:developer';
-import 'dart:typed_data';
-import 'dart:convert';
-import 'package:bluetooth_classic/bluetooth_classic.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
-import 'package:skynet/enum/device_configuration.dart';
 import 'package:skynet/screens/home/home.dart';
 import 'package:skynet/service/bluetooth/bluetooth_handler.dart';
 import 'package:skynet/utils/shared_preferences/shared_preferences_service.dart';
@@ -82,7 +78,7 @@ class _InitBluetoothState extends State<InitBluetooth> {
     debugPrint("Waiting for authentication confirmation...");
 
     // Wait for authentication success message
-    while (_receivedMessage !="Auth SuccessfullyOK") {
+    while (!_receivedMessage.contains("Auth Successfully")) {
       await Future.delayed(const Duration(milliseconds: 500)); // Check every 500ms
       // print("waiting for confirmation");
     }

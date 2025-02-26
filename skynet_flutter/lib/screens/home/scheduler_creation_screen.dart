@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skynet/utils/firebase/db_service.dart';
+import 'package:collection/collection.dart';
 
 class SchedulerCreationScreen extends StatefulWidget {
   const SchedulerCreationScreen({super.key});
@@ -68,7 +69,7 @@ class _SchedulerCreationScreenState extends State<SchedulerCreationScreen> {
 
   // Add selected device to the list
   void _addDevice() {
-    if (selectedDevice != null && selectedRoom != null) {
+    if (selectedDevice != null && selectedRoom != null && selectedDeviceCategory != null) {
       // Check if the device is already in the selectedDevices list
       bool isDeviceAdded = selectedDevices.any((device) => device['device'] == selectedDevice && device['room'] == selectedRoom);
 
@@ -81,15 +82,25 @@ class _SchedulerCreationScreenState extends State<SchedulerCreationScreen> {
         );
       } else {
         setState(() {
+          // Add the device along with its category and room
           selectedDevices.add({
             'device': selectedDevice!,
             'room': selectedRoom!,
+            'deviceCategory': selectedDeviceCategory!, // Ensure device category is added
           });
           selectedDevice = null; // Reset selected device after adding
         });
       }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please select both a device and a device category.'),
+          backgroundColor: Colors.red, // Set the background color to red
+        ),
+      );
     }
   }
+
 
   // Remove device from the list
   void _removeDevice(int index) {
@@ -113,28 +124,51 @@ class _SchedulerCreationScreenState extends State<SchedulerCreationScreen> {
   }
 
   // Function to save the scheduler
-  void _saveScheduler() {
+  Future<void> _saveScheduler() async{
     final dbService = DbService();
 
-    // to be implement  ******************************
-
+    // Print the scheduler data for debugging
     print('Scheduler Name: $schedulerName');
-    print('Selected Room: $selectedRoom');
-    print('Selected Device Category: $selectedDeviceCategory');
-    print('Selected Device: $selectedDevice');
     print('Repetition Type: $repetitionType');
     if (repetitionType == 'Custom') {
       print('Custom Days: $customDays');
     }
-    print('Turn On Time: ${turnOnTime?.hour}:${turnOnTime?.minute}');
-    print('Turn Off Time: ${turnOffTime?.hour}:${turnOffTime?.minute}');
 
+    // Ensure that turnOnTime and turnOffTime are not null
+    final turnOnTimeStr = turnOnTime != null ? '${turnOnTime?.hour}:${turnOnTime?.minute}' : '';
+    final turnOffTimeStr = turnOffTime != null ? '${turnOffTime?.hour}:${turnOffTime?.minute}' : '';
+
+    print('Turn On Time: $turnOnTimeStr');
+    print('Turn Off Time: $turnOffTimeStr');
+
+    // Display the data for all selected devices
     print('Selected Devices:');
-    for (var device in selectedDevices) {
+    selectedDevices.forEach((device) {
       print('- Device: ${device['device']} (Room: ${device['room']})');
-    }
+    });
 
-    // You can save or send the data to a database here.
+    // Structure the data for saving
+    final schedulerData = {
+      'schedulerName': schedulerName,
+      'repetitionType': repetitionType,
+      'customDays': customDays,
+      'turnOnTime': turnOnTimeStr,
+      'turnOffTime': turnOffTimeStr,
+      'rooms': groupBy(selectedDevices, (device) => device['room']).map((room, devices) {
+        return MapEntry(room, devices.map((device) {
+          print(device);
+          return {
+            'deviceCategory': device['deviceCategory'],  // This should no longer be null
+            'device': device['device'],
+          };
+        }).toList());
+      }),
+    };
+    print(schedulerData);
+    // Call the DB service to save the scheduler data
+     dbService.saveSchedulerData(schedulerData: schedulerData);
+
+    // You can add any further logic or feedback for the user here (e.g., showing a confirmation message).
   }
 
   @override
@@ -342,10 +376,10 @@ class _SchedulerCreationScreenState extends State<SchedulerCreationScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async{
                       if (_formKey.currentState!.validate() && _validateTimes() == null && selectedDevices.isNotEmpty) {
                         _formKey.currentState!.save();
-                        _saveScheduler(); // Call the save function
+                        await _saveScheduler(); // Call the save function
                       } else {
                         if (selectedDevices.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
