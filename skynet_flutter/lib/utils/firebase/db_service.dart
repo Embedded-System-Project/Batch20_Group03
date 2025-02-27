@@ -368,4 +368,34 @@ class DbService {
     await _dbService.update(DbCollections.schedulers.key, schedulerId, {'status': newStatus});
   }
 
+  Future<int?> getSocketId(String roomName, String category, String deviceName) async {
+    final prefsService = SharedPreferencesService();
+    final userId = await prefsService.getUserId();
+
+    if (userId == null) {
+      log("User ID not found in SharedPreferences.");
+      return null;
+    }
+
+    final data = await _dbService.read(DbCollections.rooms.key, userId);
+    if (data == null) {
+      log("No data found for user $userId.");
+      return null;
+    }
+
+    if (data.containsKey(roomName) && data[roomName].containsKey(category)) {
+      List<dynamic> devices = List.from(data[roomName][category]);
+
+      for (var device in devices) {
+        if (device is Map && device['name'] == deviceName && device.containsKey('socket')) {
+          return device['socket'] as int;
+        }
+      }
+    }
+
+    log("Device '$deviceName' not found in room '$roomName' under category '$category'.");
+    return null;
+  }
+
+
 }

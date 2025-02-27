@@ -46,14 +46,17 @@ class _AddFragmentState extends State<AddFragment> {
       print("User ID not found in SharedPreferences.");
       return;
     }
+
     // Call your function that returns the list of socket IDs from Firebase
     List<int> selectedSocketIds = await _dbService.getAllSocketIds();
-    // Update _socketBoxes based on the fetched IDs.
-    // Here, if a socket's id is in the list, mark its status as 1.
+
+    print("Fetched selected socket IDs: $selectedSocketIds");
+
     setState(() {
+      // Update _socketBoxes based on the fetched selected socket IDs
       for (var i = 0; i < _socketBoxes.length; i++) {
         if (selectedSocketIds.contains(_socketBoxes[i]["id"])) {
-          _socketBoxes[i]["status"] = 2;
+          _socketBoxes[i]["status"] = 2; // Mark as selected (or blocked status)
           // Optionally, set _selectedSocketIndex to the first found socket.
           _selectedSocketIndex ??= _socketBoxes[i]["id"];
         }
@@ -176,10 +179,9 @@ class _AddFragmentState extends State<AddFragment> {
     // Note: adjust addNewDevice signature as needed to include socketId.
     await _dbService.addNewDevice(roomName, deviceCategory, deviceName, socketId);
 
-
     final data = {
-      "action":"ctrl",
-      "socket":socketId,
+      "action": "ctrl",
+      "socket": socketId,
       "user": userId,
       "status": 0
     };
@@ -203,7 +205,7 @@ class _AddFragmentState extends State<AddFragment> {
       _testConnection = false;
       _deviceNameController.clear();
       // Reset all socket statuses
-      _socketBoxes = List.generate(8, (index) => {"id": index, "status": index == 3 ? 2 : 0});
+      _socketBoxes = List.generate(8, (index) => {"id": index, "status": 0});
     });
     Navigator.pushReplacement(
       context,
@@ -245,8 +247,13 @@ class _AddFragmentState extends State<AddFragment> {
                     _isDeviceSelected = false;
                     _selectedSocketIndex = null;
 
-                    // Reset socket statuses (except for blocked ones)
-                    _socketBoxes = List.generate(8, (i) => {"id": i, "status": 0});
+                    // Reset socket statuses, but preserve selected ones
+                    _socketBoxes = List.generate(8, (i) {
+                      return {
+                        "id": i,
+                        "status": _socketBoxes[i]["status"] == 2 ? 2 : 0, // Retain selected socket status
+                      };
+                    });
                   });
                 },
               ),
