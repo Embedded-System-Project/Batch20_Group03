@@ -6,12 +6,14 @@
 #define BUTTON_PIN 12  // Push button connected to pin 12
 #define BLUE_TOOTH_POWER_PIN 13
 #define DEBOUNCE_DELAY 50     // Debounce time in ms
+const int buzzerPin = A0; // Buzzer connected to A0
 
 SoftwareSerial mySerial(10, 11); // RX, TX
 const int EEPROM_ADDRESS = 0; // EEPROM memory location for UserId
 bool systemRunning = false;  // Initial state: OFF
 
 void setup() {
+    pinMode(buzzerPin, OUTPUT);
     Serial.begin(9600);
     pinMode(BUTTON_PIN, INPUT_PULLUP);  // Configure button as input with pull-up resistor
     pinMode(BLUE_TOOTH_POWER_PIN, OUTPUT);  // Set pin 13 as output
@@ -84,6 +86,9 @@ void toggleSystemState() {
                 systemRunning = !systemRunning;
                 Serial.print("System State: ");
                 Serial.println(systemRunning ? "ON" : "OFF");
+                digitalWrite(buzzerPin, HIGH); // Turn buzzer ON
+                delay(100); // Keep buzzer ON for 1 second
+                digitalWrite(buzzerPin, LOW);  // Turn buzzer OFF
 
                 if(systemRunning == true){
                     setupSockets();  // Start the system
@@ -99,6 +104,11 @@ void toggleSystemState() {
                 Serial.print("Long Pressing ");
                 setupSockets();
                 systemRunning = true;
+                digitalWrite(buzzerPin, HIGH); // Turn buzzer ON
+                delay(1000); // Keep buzzer ON for 1 second
+                digitalWrite(buzzerPin, LOW);  // Turn buzzer OFF
+  
+                
                   
                   
 
