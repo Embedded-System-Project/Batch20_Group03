@@ -44,8 +44,7 @@ void captureBluetoothData() {
             int startIndex = userIdIndex + 11; 
             int endIndex = receivedMessage.indexOf("\"", startIndex);
             extractedUserId = receivedMessage.substring(startIndex, endIndex);
-            Serial.print("Extracted UserId: ");
-            Serial.println(extractedUserId);
+           
         }
 
         if (actionIndex != -1) {
