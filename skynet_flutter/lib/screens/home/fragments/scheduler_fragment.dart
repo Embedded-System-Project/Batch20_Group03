@@ -3,14 +3,14 @@ import 'package:skynet/screens/home/scheduler_creation_screen.dart';
 import 'package:skynet/utils/firebase/db_service.dart';
 import 'package:skynet/utils/shared_preferences/shared_preferences_service.dart';
 
-class SchedulerScreen extends StatefulWidget {
-  const SchedulerScreen({super.key});
+class SchedulerFragment extends StatefulWidget {
+  const SchedulerFragment({super.key});
 
   @override
-  State<SchedulerScreen> createState() => _SchedulerScreenState();
+  State<SchedulerFragment> createState() => _SchedulerFragmentState();
 }
 
-class _SchedulerScreenState extends State<SchedulerScreen> {
+class _SchedulerFragmentState extends State<SchedulerFragment> {
   final DbService _dbService = DbService();
   List<Map<String, dynamic>> _schedulers = [];
   bool _isLoading = true;
@@ -149,14 +149,14 @@ class _SchedulerScreenState extends State<SchedulerScreen> {
                     const PopupMenuItem(
                       value: 'edit',
                       child: ListTile(
-                        leading: Icon(Icons.edit, color: Colors.blue),
+                        // leading: Icon(Icons.edit, color: Colors.blue),
                         title: Text("Edit"),
                       ),
                     ),
                     const PopupMenuItem(
                       value: 'delete',
                       child: ListTile(
-                        leading: Icon(Icons.delete, color: Colors.red),
+                        // leading: Icon(Icons.delete, color: Colors.red),
                         title: Text("Delete"),
                       ),
                     ),
